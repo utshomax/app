@@ -81,17 +81,3 @@ class CandidateResume(PGBase):
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-
-
-class CandidateProfile(PGBase):
-    __tablename__ = 'candidate_profiles'
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(BigInteger, nullable=False, index=True)  # Reference to User.id in MySQL
-
-    # resume
-    resume_path = Column(String(255))
-    resume_name = Column(String(255))
-    resume_gender = Column(String(10), nullable=True)  # Male, Female, Others
-    resume_phone = Column(String(45))
