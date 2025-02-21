@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Generator
 
@@ -15,6 +16,15 @@ app = FastAPI(
     title="Jobby API",
     description="API for resume parsing and candidate evaluation",
     version="1.0.0"
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.post("/resumes/parse")

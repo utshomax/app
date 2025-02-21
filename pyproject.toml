@@ -4,11 +4,17 @@ version = "1.0.0"
 description = "API for resume parsing and candidate evaluation"
 authors = ["Your Name <your.email@example.com>"]
 packages = [
-    { include = "app" }
+    { include = "app" },
+    { include = "api" },
+    { include = "core" },
+    { include = "logic" },
+    { include = "models" },
+    { include = "services" },
+    { include = "utils" }
 ]
 
 [tool.poetry.dependencies]
-python = "^3.13"
+python = "^3.9"
 python-dotenv = "1.0.0"
 SQLAlchemy = "^2.0.38"
 PyMySQL = "1.1.1"
