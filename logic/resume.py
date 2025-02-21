@@ -29,6 +29,33 @@ def check_existing_resume(pg_db: Session, resume_path: str) -> Dict[str, Any]:
         return make_candidate_profile_response(existing_resume)
     return {"exists": False}
 
+def sanitize_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Sanitize data by removing NUL characters from string values
+
+    Args:
+        data (Dict[str, Any]): Data dictionary to sanitize
+
+    Returns:
+        Dict[str, Any]: Sanitized data dictionary
+    """
+    if not isinstance(data, dict):
+        return data
+
+    sanitized = {}
+    for key, value in data.items():
+        if isinstance(value, str):
+            # Replace NUL characters with empty string
+            sanitized[key] = value.replace('\x00', '')
+        elif isinstance(value, dict):
+            sanitized[key] = sanitize_data(value)
+        elif isinstance(value, list):
+            sanitized[key] = [sanitize_data(item) if isinstance(item, dict) else 
+                             item.replace('\x00', '') if isinstance(item, str) else item 
+                             for item in value]
+        else:
+            sanitized[key] = value
+    return sanitized
+
 async def store_resume_data(pg_db: Session, candidate_id, candidate_data, resume_path: str, result: Dict[str, Any], blended: bool=False) -> Dict[str, Any]:
     """Store resume data in PostgreSQL"""
     try:
@@ -55,7 +82,10 @@ async def store_resume_data(pg_db: Session, candidate_id, candidate_data, resume
             **result.get('data', {})
         }
 
-        stmt = insert(CandidateResume).values(**data)
+        # Sanitize data before storing
+        sanitized_data = sanitize_data(data)
+
+        stmt = insert(CandidateResume).values(**sanitized_data)
         stmt = stmt.on_conflict_do_update(
             index_elements=['resume_path'],
             set_={col.name: stmt.excluded[col.name] for col in CandidateResume.__table__.columns if col.name != 'id'}
@@ -106,7 +136,7 @@ def make_candidate_profile_response(existing_resume) -> Dict[str, Any]:
           }
       }
     }
-    return {"exists": True, "resume_id": existing_resume.id, "resume_data": resume_data}
+    return {"exists": True, "resume_id": existing_resume.id, "data": resume_data}
 
 
 async def get_resume_result(service_manager: ServiceManager, resume_path:str, candidate_id: int, structured: bool=True) -> Dict[str, Any]:
