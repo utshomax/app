@@ -4,8 +4,10 @@ from utils.structure import DataStructureService
 from utils.text_to_sql import TextToSQLConverter
 from openai import OpenAI
 from models.evaluator import CandidateEvaluation
+from models.evaluator_it import CandidateEvaluation as CandidateEvalIt
 import os
 from sqlalchemy import text
+from utils.system_prompts import english as system_english, italian as system_it
 import logging
 
 class CandidateEvaluator:
@@ -79,10 +81,10 @@ class CandidateEvaluator:
               'candidates': candidates_data,
               'evaluations': evaluations
           }
-    
-  
 
-    
+
+
+
     def evaluate_candidate(self, candidate: Dict, compare_with: str) -> Dict:
         """Evaluate a single candidate using weighted criteria
         Args:
@@ -149,40 +151,7 @@ class CandidateEvaluator:
             }
 
             # Use OpenAI to analyze and structure the data with scoring
-            system_prompt = """You are an expert recruitment analyst. Evaluate the candidate data against the requirements using this scoring matrix:
-                    - Profile Completeness & Verification (10%)
-                        * Profile Completion Score (5%)
-                        * Verification Status (5%)
-                    - Experience & Skills (30%)
-                        * Relevant Work Experience (15%)
-                        * Experience in Jobby vs External (5%)
-                        * Hard Skills Match (10%)
-                    - Location & Availability (20%)
-                        * Location Proximity (10%)
-                        * Availability Match (5%)
-                        * Remote Work Feasibility (5%)
-                    - Performance & Engagement (15%)
-                        * Profile Rating (5%)
-                        * Reviews & Feedback (5%)
-                        * Platform Activity (5%)
-                    - Certifications & Credentials (10%)
-                        * Relevant Certifications (5%)
-                        * Language Proficiency (3%)
-                        * Internal Badges (2%)
-                    Analise and Return the following information in JSON format:
-                    feedback_badges: Key characteristics of the candidate, requiring at least 5 badges to provide a well-rounded assessment of their professional profile.
-                    matching_score: A quantitative measure (0-100) indicating the overall fit of the candidate for the position.
-                    strengths: Top 3 distinctive qualities or capabilities that make the candidate stand out.
-                    caution_points: Up to 3 areas where the candidate may need improvement or additional support.
-                    profile_overview: A concise summary of the candidate's professional background and current status.
-                    about: Detailed narrative of the candidate's background, including both personal and professional aspects.
-                    technical_skills: List of specific technical competencies and tools the candidate is proficient in.
-                    soft_skills: List of interpersonal and non-technical abilities that contribute to workplace effectiveness.
-                    location_preferences: Geographic locations where the candidate is willing to work.
-                    remote_work_preference: Candidate's preferred working arrangement (Remote/Hybrid/On-site).
-                    experience_relevance: Assessment of each work experience's relevance to the position (output - maximum 4).
-                    certifications: Professional qualifications and certifications that validate the candidate's expertise.
-                 """
+            system_prompt = system_it
 
             content = f"Requirements: {compare_with}\n\nCandidate Data: {candidate_data}"
 
@@ -197,7 +166,7 @@ class CandidateEvaluator:
 
             evaluation_result = self.structure.structure_data(
                 content = content,
-                model_class= CandidateEvaluation,
+                model_class= CandidateEvalIt,
                 system_prompt=system_prompt,
             )
 
@@ -209,4 +178,3 @@ class CandidateEvaluator:
 
         except Exception as e:
             return {'error': str(e)}
-        
