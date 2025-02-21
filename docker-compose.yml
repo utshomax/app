@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -11,15 +11,12 @@ services:
       - PG_HOST=postgres
       - PG_PORT=5432
       - PG_DATABASE=jobby_resume
-      - DB_HOST=127.0.0.1
+      - DB_HOST=34.226.154.58
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_PORT=3306
       - DB_NAME=${DB_NAME}
       - MYSQL_SSL_MODE=DISABLED
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    network_mode: "bridge"
     depends_on:
       - postgres
 
