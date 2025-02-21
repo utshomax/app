@@ -78,7 +78,6 @@ class CandidateEvaluator:
 
           return {
               'compare_with' : compare_with,
-              'candidates': candidates_data,
               'evaluations': evaluations
           }
 
@@ -172,8 +171,8 @@ class CandidateEvaluator:
 
             return {
                 'candidate_id': candidate.get('user_id'),
-                'evaluation_result': evaluation_result["parsed_data"],
-                'candidat_data': candidate
+                'result': evaluation_result["parsed_data"],
+                'candidate' : candidate,
             }
 
         except Exception as e:

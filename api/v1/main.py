@@ -32,8 +32,8 @@ async def parse_resume(
         
         # Check if resume exists
         existing_result = check_existing_resume(pg_db, resume_path)
-        # if existing_result["exists"]:
-        #     return {"success": True, "message": "Resume already processed", "resume_id": existing_result["resume_id"], "data": existing_result["resume_data"]}
+        if existing_result["exists"]:
+            return {"success": True, "message": "Resume already processed", "resume_id": existing_result["resume_id"], "data": existing_result["resume_data"]}
     
         # Get resume from S3
         logging.info(f"Fetching resume from path: {resume_path}")
