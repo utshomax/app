@@ -10,7 +10,12 @@ from sqlalchemy.ext.declarative import declarative_base
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('app.log', mode='a'),
+        logging.StreamHandler()
+    ],
+    force=True
 )
 logger = logging.getLogger('jobby.db')
 
