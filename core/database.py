@@ -95,7 +95,7 @@ def create_all_tables():
         raise
 
 # Create tables on module import
-#create_all_tables()
+create_all_tables()
 # Synchronize schema changes
 #sync_schema_changes()
 
