@@ -47,3 +47,19 @@ class DataStructureService:
             model_class=ResumeData,
             system_prompt="Extract structured information from the resume text."
         )
+    
+    def struture_resume_with_blended_jobby_data(self, content: str) -> Dict[str, Any]:
+        """Blend resume data with jobby data for a comprehensive profile"""
+        # Placeholder for blending logic
+        return self.structure_data(
+            content=content,
+            model_class=ResumeData,
+            system_prompt="""You are a resume parser.
+            Ensure all relevant information is captured and structured accurately.
+            - Remove any duplicates or unnecessary data.
+            - Ensure all fields are accurately captured.
+            - Blend resume data with jobby data ( About, Skills, Certifications ) for a comprehensive profile.
+            - For About Section Add Detailed narrative of the candidate's background, including both personal and professional aspects.
+            - Organize data into the given structured format.
+            """
+        )

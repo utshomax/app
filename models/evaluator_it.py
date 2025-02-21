@@ -3,7 +3,9 @@ from pydantic import BaseModel, Field
 from .resume import Experience
 
 class ExperienceRelevance(BaseModel):
-    experience: Experience
+    experience_id: int = Field(
+        description="ID dell'esperienza nel curriculum"
+    )
     is_relevant: bool = Field(
         description="Indica se l'esperienza è rilevante per la descrizione del lavoro"
     )
@@ -34,21 +36,6 @@ class CandidateEvaluation(BaseModel):
         description="Panoramica completa del profilo del candidato"
     )
 
-    # Sezione Informazioni
-    about: str = Field(
-        description="Background personale e professionale dettagliato del candidato"
-    )
-
-    # Valutazione delle Competenze
-    technical_skills: List[str] = Field(
-        default_factory=list,
-        description="Competenze tecniche e professionali"
-    )
-    soft_skills: List[str] = Field(
-        default_factory=list,
-        description="Competenze trasversali e capacità interpersonali"
-    )
-
     # Disponibilità e Preferenze
     location_preferences: List[str] = Field(
         default_factory=list,
@@ -62,9 +49,6 @@ class CandidateEvaluation(BaseModel):
     experience_relevance: List[ExperienceRelevance] = Field(
         description="Valutazione della rilevanza per ogni esperienza dal curriculum (Massimo 4)"
     )
-
-    certifications: List[str] = Field(default_factory=list, description="Certificazioni e licenze professionali")
-
 
     class Config:
         json_schema_extra = {
@@ -89,36 +73,15 @@ class CandidateEvaluation(BaseModel):
                 "profile_overview": "Ingegnere software esperto con più di 5 anni di esperienza in applicazioni aziendali",
                 "experience_relevance": [
                     {
-                        "experience": {
-                            "company": "Google",
-                            "title": "Senior Software Engineer",
-                            "start_date": "2021-07",
-                            "end_date": "Presente",
-                            "description": "Ha guidato lo sviluppo di soluzioni cloud, gestito un team di 5 ingegneri",
-                            "location": "Mountain View, CA, USA"
-                        },
+                        "experience_id": 1,
                         "is_relevant": True
                     },
                     {
-                        "experience": {
-                            "company": "Azienda B",
-                            "title": "Senior Software Engineer",
-                            "start_date": "2021-01-01",
-                            "end_date": "2022-12-31",
-                            "description": "Ha guidato lo sviluppo di nuove funzionalità e iniziative",
-                            "location": "Mountain View, CA, USA"
-                        },
+                        "experience_id": 2,
                         "is_relevant": False
                     }
                 ],
-                "certifications": [
-                    "Certificazione 1",
-                    "Certificazione 2"
-                ],
-                "about": "Ingegnere software esperto con una solida preparazione in tecnologie cloud e leadership del team. Noto per fornire soluzioni di alta qualità e mentoring per sviluppatori junior.",
-                "technical_skills": ["Python", "AWS", "Docker", "Kubernetes", "React"],
-                "soft_skills": ["Leadership", "Comunicazione", "Problem Solving", "Collaborazione in Team"],
-                "location_preferences": ["Area della Baia di San Francisco", "Seattle", "New York"],
+                "location_preferences": ["Milano", "Roma", "Torino"],
                 "remote_work_preference": "Ibrido"
             }
         }

@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -7,10 +8,11 @@ from core.database import get_db, get_pg_db
 from logic.collect import collect_candidate_data
 from services import ServiceManager, get_service_manager
 from models.sql import CandidateResume
-from logic.resume import get_resume_path, check_existing_resume, store_resume_data
+from logic.resume import check_existing_resume, get_resume_path, store_resume_data, get_resume_result,blend_data
 import logging
 import core.database
 from services.evaluator import CandidateEvaluator
+from utils.structure import DataStructureService
 
 app = FastAPI(
     title="Jobby API",
@@ -27,42 +29,48 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.post("/resumes/parse")
 async def parse_resume(
     candidate_id: int,
+    blend: bool = False,
     service_manager: ServiceManager = Depends(get_service_manager),
     pg_db: Session = Depends(get_pg_db)
 ) -> Dict[str, Any]:
     try:
-        # Get resume path
         path_result = get_resume_path(service_manager, candidate_id)
         if "error" in path_result:
             return path_result
         resume_path = path_result["resume_path"]
-        
+
         # Check if resume exists
         existing_result = check_existing_resume(pg_db, resume_path)
-        if existing_result["exists"]:
-            return {"success": True, "message": "Resume already processed", "resume_id": existing_result["resume_id"], "data": existing_result["resume_data"]}
-    
-        # Get resume from S3
-        logging.info(f"Fetching resume from path: {resume_path}")
-        temp_resume_path = service_manager.s3.fetch_resume(resume_path)
-        if not temp_resume_path:
-            return {"success": False,"error": "Failed to fetch resume from storage"}
+        # if existing_result["exists"]:
+        #     return existing_result
 
-        # Process resume
-        result = await service_manager.resume_parser.process_resume(temp_resume_path, candidate_id)
-        if "error" in result:
-            return result
-        
+        # Process resume and collect candidate data concurrently
+        tasks = [
+            get_resume_result(service_manager, resume_path, candidate_id, structured=not blend),
+            collect_candidate_data(service_manager, candidate_id)
+        ]
+        resume_result, candidate_data = await asyncio.gather(*tasks)
+
+        if not resume_result:
+            return {"error": "Failed to process resume"}
+        data_to_store = resume_result[0]
+        if blend:
+            structureService = DataStructureService()
+            content = blend_data(data_to_store, candidate_data)
+            structured_data = structureService.struture_resume_with_blended_jobby_data(content)
+            store_result = await store_resume_data(pg_db, candidate_id, candidate_data, resume_path, {"data" : structured_data["parsed_data"]}, blended=blend)
+            if "error" in store_result:
+                return store_result
+            return {"success": True, "message": "Resume processed and stored successfully", "data": structured_data["parsed_data"]}
         # Store resume data
-        store_result =await store_resume_data(pg_db, candidate_id, resume_path, result)
+        store_result = await store_resume_data(pg_db, candidate_id, candidate_data, resume_path, resume_result[0], blended=blend)
         if "error" in store_result:
             return store_result
-            
-        result['resume_id'] = store_result["resume_id"]
-        return {"success": True,"message": "Resume processed and stored successfully", "data": result}
+        return {"success": True, "message": "Resume processed and stored successfully", "data": resume_result[0]}
 
     except Exception as e:
         if pg_db and hasattr(pg_db, 'is_active') and pg_db.is_active:

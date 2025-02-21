@@ -15,7 +15,7 @@ class ResumeParserService:
         """Parse resume file and extract structured information"""
         file_ext = os.path.splitext(file_path)[1].lower()
         content = self._extract_text(file_path, file_ext)
-        return self.data_structure_service.structure_resume_data(content)
+        return content
 
     def _extract_text_from_file_obj(self, file_obj: Any, file_ext: str) -> str:
         """Extract text content from file object"""
@@ -44,14 +44,16 @@ class ResumeParserService:
                 logging.error(f"Invalid or missing file path: {file_path}")
                 return {"error": "Invalid or missing file path"}
 
-            parsed_result = self.parse_file(file_path)
-            if not parsed_result:
+            content = self.parse_file(file_path)
+            sturcted_data = self.data_structure_service.structure_resume_data(content)
+
+            if not sturcted_data:
                 logging.error(f"Failed to parse resume file: {file_path}")
                 return {"error": "Failed to parse resume file"}
 
-            logging.info(f"Resume parsed: {parsed_result}")
+            logging.info(f"Resume parsed: {sturcted_data}")
 
-            return {"success": True, "message": "Resume processed successfully", "candidate_id": candidate_id, "data": parsed_result['parsed_data']}
+            return {"success": True, "message": "Resume processed successfully", "candidate_id": candidate_id, "data": sturcted_data['parsed_data']}
 
         except Exception as e:
             logging.error(f"Error processing resume: {str(e)}")

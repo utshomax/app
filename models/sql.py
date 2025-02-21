@@ -33,7 +33,7 @@ class CandidateResume(PGBase):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(BigInteger, nullable=False, index=True)  # Reference to User.id in MySQL
-    resume_path = Column(String(255))
+    resume_path = Column(String(255), unique=True, index=True)
 
     #data from jobby for faster search
     has_jobby_data = Column(Boolean, default=False)
@@ -44,7 +44,7 @@ class CandidateResume(PGBase):
     jobby_date_of_birth = Column(Date)
     jobby_location = Column(String(255))  # GPS or preferred cities
     jobby_availability = Column(String(255))  # e.g., "Monday Morning, Tuesday Evening"
-    jobby_about = Column(Text)  # Professional summary/objective
+    jobby_about = Column(Text)  # Professional about/objective
     jobby_skills = Column(JSON)  # List of skills
     jobby_language = Column(String(45))  # List of languages
     jobby_certifications = Column(JSON)  # List of certifications
@@ -61,7 +61,7 @@ class CandidateResume(PGBase):
     email = Column(String(255))
     location = Column(String(255))  # GPS or preferred cities
     # availability = Column(String(255))  # e.g., "Monday Morning, Tuesday Evening"
-    summary = Column(Text)  # Professional summary/objective
+    about = Column(Text)  # Professional about/objective
 
     # Skills and Languages
     skills = Column(JSON)  # List of skills

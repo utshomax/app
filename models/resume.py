@@ -22,6 +22,7 @@ class Education(BaseModel):
         }
 
 class Experience(BaseModel):
+    expeience_id: int = Field(..., description="Unique identifier for the experience entry")
     company: str = Field(..., description="Name of the company or organization")
     title: str = Field(..., description="Job title or position held")
     start_date: str = Field(..., description="Start date of employment (YYYY-MM format)")
@@ -32,6 +33,7 @@ class Experience(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
+                "expeience_id": 1,
                 "company": "Google",
                 "title": "Senior Software Engineer",
                 "start_date": "2021-07",
@@ -47,15 +49,15 @@ class ResumeData(BaseModel):
     phone: Optional[str] = Field(None, description="Contact phone number")
     location: Optional[str] = Field(None, description="Current location (City, State, Country)")
     gender: Optional[Literal["M", "F", "0"]] = Field(None, description="Gender (M: Male, F: Female, 0: Other)")
-    summary: Optional[str] = Field(None, description="Professional summary or objective statement")
-    skills: List[str] = Field(default_factory=list, description="Technical and professional skills")
+    about: Optional[str] = Field(None, description="Detailed personal and professional background of the candidate")
+    skills: List[str] = Field(default_factory=list, description="Technical and Soft skills")
     projects: List[str] = Field(default_factory=list, description="Notable projects completed")
-    achievements: List[str] = Field(default_factory=list, description="Professional and academic achievements")
+    achievements: List[str] = Field(default_factory=list, description="Personal, professional and academic achievements")
     publications: List[str] = Field(default_factory=list, description="Published works and research papers")
-    experience: List[Experience] = Field(default_factory=list, description="Professional work experience")
+    experience: List[Experience] = Field(default_factory=list, description="Professional & Industry work experience")
     education: List[Education] = Field(default_factory=list, description="Educational background")
     languages: List[str] = Field(default_factory=list, description="Languages known with proficiency")
-    certifications: List[str] = Field(default_factory=list, description="Professional certifications and licenses")
+    certifications: List[str] = Field(default_factory=list, description="certifications and licenses")
 
     class Config:
         json_schema_extra = {
@@ -65,13 +67,13 @@ class ResumeData(BaseModel):
                 "phone": "+1-123-456-7890",
                 "location": "San Francisco, CA, USA",
                 "gender": "M",
-                "summary": "Experienced software engineer with 8+ years in full-stack development",
+                "about": "Experienced software engineer with 8+ years in full-stack development",
                 "skills": ["Python", "JavaScript", "AWS", "Docker", "React"],
                 "projects": ["Built scalable microservices architecture", "Developed ML-powered recommendation system"],
                 "achievements": ["Filed 2 patents", "Increased system performance by 40%"],
                 "publications": ["Machine Learning in Production: Best Practices"],
                 "experience": [
-                    {
+                    {   "expeience_id": 1,
                         "company": "Google",
                         "title": "Senior Software Engineer",
                         "start_date": "2021-07",

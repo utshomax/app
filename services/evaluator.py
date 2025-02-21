@@ -94,27 +94,6 @@ class CandidateEvaluator:
         """
         logging.info(f"Evaluating candidate: {candidate['user_id']}")
         try:
-            # Prepare data for merging
-            about_text = []
-            if candidate.get('jobby_about'):
-                about_text.append(candidate['jobby_about'])
-            if candidate.get('summary'):
-                about_text.append(candidate['summary'])
-
-            # Merge skills
-            skills = set()
-            if candidate.get('jobby_skills'):
-                skills.update(candidate['jobby_skills'])
-            if candidate.get('skills'):
-                skills.update(candidate['skills'])
-
-            # Merge certifications
-            certifications = set()
-            if candidate.get('jobby_certifications'):
-                certifications.update(candidate['jobby_certifications'])
-            if candidate.get('certifications'):
-                certifications.update(candidate['certifications'])
-
             # Prepare comprehensive candidate data
             candidate_data = {
                 'profile_completion': {
@@ -127,8 +106,8 @@ class CandidateEvaluator:
                     ])
                 },
                 'experience_skills': {
-                    'about': ' '.join(about_text),
-                    'skills': list(skills),
+                    'about': candidate.get('about', ''),
+                    'skills': candidate.get('skills', []),
                     'experience_from_resume': candidate.get('experience', []),
                     'jobby_jobs': candidate.get('jobby_jobs', {})
                 },
@@ -143,7 +122,7 @@ class CandidateEvaluator:
                     'premium': candidate.get('jobby_premium', False)
                 },
                 'certifications_credentials': {
-                    'certifications': list(certifications),
+                    'certifications': candidate.get('certifications', []),
                     'languages': candidate.get('languages', []),
                     'education': candidate.get('education', [])
                 }

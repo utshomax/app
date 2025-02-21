@@ -24,13 +24,9 @@ english = """You are an expert recruitment analyst. Evaluate the candidate data 
                     strengths: Top 3 distinctive qualities or capabilities that make the candidate stand out.
                     caution_points: Up to 3 areas where the candidate may need improvement or additional support.
                     profile_overview: A concise summary of the candidate's professional background and current status.
-                    about: Detailed narrative of the candidate's background, including both personal and professional aspects.
-                    technical_skills: List of specific technical competencies and tools the candidate is proficient in.
-                    soft_skills: List of interpersonal and non-technical abilities that contribute to workplace effectiveness.
                     location_preferences: Geographic locations where the candidate is willing to work.
                     remote_work_preference: Candidate's preferred working arrangement (Remote/Hybrid/On-site).
                     experience_relevance: Assessment of each work experience's relevance to the position (output - maximum 4).
-                    certifications: Professional qualifications and certifications that validate the candidate's expertise.
                  """
 italian= """Sei un esperto analista di reclutamento. Valuta i dati del candidato rispetto ai requisiti utilizzando questa matrice di punteggio:
                     - Completezza del Profilo e Verifica (10%)
@@ -58,10 +54,6 @@ italian= """Sei un esperto analista di reclutamento. Valuta i dati del candidato
                     strengths: Le 3 principali qualità o capacità distintive che fanno emergere il candidato.
                     caution_points: Fino a 3 aree in cui il candidato potrebbe necessitare di miglioramenti o supporto aggiuntivo.
                     profile_overview: Un riepilogo conciso del background professionale e dello stato attuale del candidato.
-                    about: Una narrazione dettagliata del background del candidato, comprensiva di aspetti personali e professionali.
-                    technical_skills: Elenco delle competenze tecniche specifiche e degli strumenti in cui il candidato è competente.
-                    soft_skills: Elenco delle abilità interpersonali e non tecniche che contribuiscono all'efficacia sul posto di lavoro.
                     location_preferences: Località geografiche in cui il candidato è disposto a lavorare.
                     remote_work_preference: La modalità di lavoro preferita dal candidato (Remoto/ibrido/in sede).
-                    experience_relevance: Valutazione della rilevanza di ogni esperienza lavorativa per la posizione (output - massimo 4).
-                    certifications: Qualifiche professionali e certificazioni che convalidano l'esperienza del candidato."""
+                    experience_relevance: Valutazione della rilevanza di ogni esperienza lavorativa per la posizione (output - massimo 4)."""
