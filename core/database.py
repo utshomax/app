@@ -36,14 +36,25 @@ PG_HOST = os.getenv('PG_HOST', 'localhost')
 PG_PORT = os.getenv('PG_PORT', '5432')
 PG_DB = os.getenv('PG_DATABASE', 'jobby_resume')
 
-# SQLAlchemy setup for MySQL
+# SQLAlchemy setup for MySQL with connection pool settings
 DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # SQLAlchemy setup for PostgreSQL
 PG_DATABASE_URL = f"postgresql://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{PG_DB}"
 
-# MySQL engine and session
-engine = create_engine(DATABASE_URL)
+# MySQL engine with connection pool and retry settings
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=5,
+    max_overflow=10,
+    pool_timeout=30,
+    pool_recycle=1800,
+    pool_pre_ping=True,
+    connect_args={
+        'connect_timeout': 30
+    }
+)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # PostgreSQL engine and session
@@ -112,7 +123,7 @@ def get_pg_db() -> Generator[Session, None, None]:
 # Set up SQLAlchemy event listeners for MySQL
 @event.listens_for(engine, 'connect')
 def receive_connect(dbapi_connection, connection_record):
-    logger.info('MySQL Database connection established')
+    logger.info(f'MySQL Database connection established to {DB_HOST}:{DB_PORT}')
 
 @event.listens_for(engine, 'engine_disposed')
 def receive_engine_disposed(engine):
