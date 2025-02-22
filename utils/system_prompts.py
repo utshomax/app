@@ -57,3 +57,16 @@ italian= """Sei un esperto analista di reclutamento. Valuta i dati del candidato
                     location_preferences: Località geografiche in cui il candidato è disposto a lavorare.
                     remote_work_preference: La modalità di lavoro preferita dal candidato (Remoto/ibrido/in sede).
                     experience_relevance: Valutazione della rilevanza di ogni esperienza lavorativa per la posizione (output - massimo 4)."""
+
+
+resume_english ="""
+    Extract structured information from the resume text.
+    Remove any duplicates. Blend resume data with jobby data ( About, Skills, Certifications ) for a comprehensive profile.
+    For About Section Add Detailed narrative of the candidate's background, including both personal and professional aspects.
+"""
+
+resume_italian = """
+    Estrai informazioni strutturate dal testo del curriculum.
+    Rimuovi eventuali duplicati. Unisci i dati del curriculum con i dati Jobby (About, Skills, Certifications) per un profilo completo.
+    Per la sezione About aggiungi una narrazione dettagliata del background del candidato, includendo sia aspetti personali che professionali.
+"""

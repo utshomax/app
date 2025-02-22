@@ -2,6 +2,7 @@ import os
 from typing import Dict, Any
 from openai import OpenAI
 from models.resume_it import ResumeData
+from .system_prompts import resume_english, resume_italian
 
 class DataStructureService:
     def __init__(self):
@@ -54,12 +55,5 @@ class DataStructureService:
         return self.structure_data(
             content=content,
             model_class=ResumeData,
-            system_prompt="""You are a resume parser.
-            Ensure all relevant information is captured and structured accurately.
-            - Remove any duplicates or unnecessary data.
-            - Ensure all fields are accurately captured.
-            - Blend resume data with jobby data ( About, Skills, Certifications ) for a comprehensive profile.
-            - For About Section Add Detailed narrative of the candidate's background, including both personal and professional aspects.
-            - Organize data into the given structured format.
-            """
+            system_prompt=resume_english
         )

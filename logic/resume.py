@@ -107,36 +107,17 @@ def make_candidate_profile_response(existing_resume) -> Dict[str, Any]:
       "message": "Resume processed successfully",
       "candidate_id": existing_resume.user_id,
       "data": {
-          "name": existing_resume.name,
-          "email": existing_resume.email,
-          "phone": existing_resume.phone,
-          "location": existing_resume.location,
-          "gender": existing_resume.gender,
-          "about": existing_resume.about,
-          "skills": existing_resume.skills,
-          "languages": existing_resume.languages,
-          "certifications": existing_resume.certifications,
-          "education": existing_resume.education,
-          "experience": existing_resume.experience,
-          "projects": existing_resume.projects,
-          "achievements": existing_resume.achievements,
-          "publications": existing_resume.publications,
-          "volunteer_work": existing_resume.volunteer_work,
-          "professional_links": existing_resume.professional_links,
-          "jobby" : {
-            "gender": existing_resume.jobby_gender,
-            "telephone": existing_resume.jobby_telephone,
-            "email": existing_resume.jobby_email,
-            "about": existing_resume.jobby_about,
-            "rating": existing_resume.jobby_rating,
-            "premium": existing_resume.jobby_premium,
-            "jobs": existing_resume.jobby_jobs,
-            "certifications": existing_resume.jobby_certifications
-            #add localtion, availibility,
-          }
+          **{field: getattr(existing_resume, field) for field in [
+              "name", "email", "phone", "location", "gender", "about",
+              "skills", "languages", "certifications", "education",
+              "experience", "projects", "achievements", "publications",
+              "volunteer_work", "professional_links","jobby_gender", "jobby_telephone", "jobby_email", "jobby_about",
+              "jobby_rating", "jobby_premium", "jobby_jobs", "jobby_certifications"
+          ]},
+          "blended": existing_resume.has_jobby_data,
       }
     }
-    return {"exists": True, "resume_id": existing_resume.id, "data": resume_data}
+    return {"exists": True, "blended": existing_resume.has_jobby_data, "resume_id": existing_resume.id, "data": resume_data}
 
 
 async def get_resume_result(service_manager: ServiceManager, resume_path:str, candidate_id: int, structured: bool=True) -> Dict[str, Any]:

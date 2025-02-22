@@ -45,7 +45,7 @@ async def parse_resume(
 
         # Check if resume exists
         existing_result = check_existing_resume(pg_db, resume_path)
-        if existing_result["exists"]:
+        if existing_result["exists"] and existing_result["blended"] == blend:
             return existing_result
 
         # Process resume and collect candidate data concurrently
