@@ -5,7 +5,7 @@ services:
     restart: always
     build: .
     ports:
-      - "80:8000"
+      - "443:8000"
     environment:
       - PG_USER=postgres
       - PG_PASSWORD=postgres
