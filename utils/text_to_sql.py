@@ -99,8 +99,8 @@ class TextToSQLConverter:
         schema = self.get_table_schema(table_names)
 
         messages = [
-            {"role": "system", "content": "You are a PostGres SQL Fuzzy Search expert. Convert the natural language search query to a postgres compatible SQL search query based on the provided schema.You MUST ONLY return the SQL query or False without any explanation. RETURN False if you are unable to generate the query or the query is invalid. FOR A VALID QUERY RETURN only the user_id. Add a limit of 50. Do not include any other information in the response."},
-            {"role": "user", "content": f"### Postgres SQL tables, with their properties:\n{schema}\n ### Additional Information: \n{additional_context}\n ### {query}\n### SQL Query:"}
+            {"role": "system", "content": "You are a PostGres SQL Fuzzy Search expert for finding suitable candidates for diffrent possitions. Analize the search text and Try to find users intent. Determine possible places to search for the information. Generate a postgres compatible SQL query based on the provided schema.You MUST ONLY return the SQL query or False without any explanation. RETURN False if you are unable to generate the query or the query is invalid. FOR A VALID QUERY RETURN only the user_id. Add a limit of 50. Do not include any other information in the response."},
+            {"role": "user", "content": f"### Postgres SQL table with properties:\n{schema}\n ### Additional Information: \n{additional_context}\n ### {query}\n### SQL Query:"}
         ]
 
         # Generate SQL query using GPT-4
@@ -131,6 +131,7 @@ class TextToSQLConverter:
             experience, education, certification, skills should be queried in both jobby_* and normal columns.
             Try to do proximity search on skills, certifications, experience, education, language using ilike oparator.
             Use ILIKE operator for fuzzy search.
+            You may decide to search in descriptions feilds or about coloumn as well.
             Exact match may not be available.
                 Some examples:
                 Question: Candidates who can cook
