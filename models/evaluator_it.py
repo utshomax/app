@@ -4,10 +4,10 @@ from .resume import Experience
 
 class ExperienceRelevance(BaseModel):
     experience_id: int = Field(
-        description="ID dell'esperienza nel curriculum"
+        description="ID of the relevent experience experience_from_resume ( strict )"
     )
     is_relevant: bool = Field(
-        description="Indica se l'esperienza è rilevante per la descrizione del lavoro"
+        description="Indicates whether the experience is relevant to the job description"
     )
 
 class CandidateEvaluation(BaseModel):
