@@ -30,6 +30,15 @@ app.add_middleware(
 )
 
 
+@app.get("/health")
+async def health_check() -> Dict[str, Any]:
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "service": "jobby-api",
+        "version": app.version
+    }
+
 @app.post("/resumes/parse")
 async def parse_resume(
     candidate_id: int,
