@@ -29,12 +29,12 @@ class TextToSQLConverter:
             jobby_location VARCHAR(255),
             jobby_availability VARCHAR(255),
             jobby_about TEXT,
-            jobby_skills JSONB (ARRAY),
+            jobby_skills JSONB (ARRAY of strings),
             jobby_language VARCHAR(45),
-            jobby_certifications JSONB (ARRAY),
+            jobby_certifications JSONB (ARRAY of strings),
             jobby_education JSONB (ARRAY),
             jobby_jobs JSONB (Object of {total: int
-                    categories: array of JobCategory({
+                    categories: array of JobCategory the user has worked on({
                         count: int
                         category: str})
                     job_titles: array of JobTitle({
@@ -54,9 +54,9 @@ class TextToSQLConverter:
             about TEXT,
 
             -- Skills and Languages
-            skills JSONB (ARRAY),
-            languages JSONB (ARRAY),
-            certifications JSONB (ARRAY),
+            skills JSONB (ARRAY of strings),
+            languages JSONB (ARRAY of strings),
+            certifications JSONB (ARRAY of strings),
 
             -- Education and Experience
             education JSONB,
@@ -73,17 +73,9 @@ class TextToSQLConverter:
             publications JSONB,
             volunteer_work JSONB,
             professional_links JSONB,
-
             created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-        );
-
-        -- Indexes
-        CREATE INDEX idx_candidate_resumes_user_id ON candidate_resumes (user_id);
-        CREATE INDEX idx_candidate_resumes_resume_path ON candidate_resumes (resume_path);
-        CREATE INDEX idx_candidate_resumes_jobby_name ON candidate_resumes (jobby_name);
-        CREATE INDEX idx_candidate_resumes_jobby_email ON candidate_resumes (jobby_email);
-        CREATE INDEX idx_candidate_resumes_jobby_location ON candidate_resumes (jobby_location);"""]
+        );"""]
         return '\n'.join(schema)
         logging.info(f"Table names: {table_names}")
         for table in PGBase.metadata.sorted_tables:
