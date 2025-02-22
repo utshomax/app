@@ -63,14 +63,10 @@ async def parse_resume(
             content = blend_data(data_to_store, candidate_data)
             structured_data = structureService.struture_resume_with_blended_jobby_data(content)
             store_result = await store_resume_data(pg_db, candidate_id, candidate_data, resume_path, {"data" : structured_data["parsed_data"]}, blended=blend)
-            if "error" in store_result:
-                return store_result
-            return {"success": True, "message": "Resume processed and stored successfully", "data": structured_data["parsed_data"]}
+            return store_result["data"]
         # Store resume data
         store_result = await store_resume_data(pg_db, candidate_id, candidate_data, resume_path, resume_result[0], blended=blend)
-        if "error" in store_result:
-            return store_result
-        return {"success": True, "message": "Resume processed and stored successfully", "data": resume_result[0]}
+        return store_result["data"]
 
     except Exception as e:
         if pg_db and hasattr(pg_db, 'is_active') and pg_db.is_active:

@@ -94,7 +94,9 @@ async def store_resume_data(pg_db: Session, candidate_id, candidate_data, resume
         pg_db.execute(stmt)
         pg_db.commit()
 
-        return {"success": True}
+        # Get the inserted/updated record
+        updated_record = pg_db.query(CandidateResume).filter(CandidateResume.resume_path == sanitized_data['resume_path']).first()
+        return {"success": True, "data": make_candidate_profile_response(updated_record)}
 
     except Exception as e:
         logging.error(f"Error storing resume data: {str(e)}")
