@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from .resume import Experience
 
 class ExperienceRelevance(BaseModel):
-    experience_id: int = Field(
+    experience_id: str = Field(
         description="ID of the relevent experience experience_from_resume ( strict )"
     )
     is_relevant: bool = Field(
@@ -73,11 +73,11 @@ class CandidateEvaluation(BaseModel):
                 "profile_overview": "Experienced software engineer with 5+ years in enterprise applications",
                 "experience_relevance": [
                     {
-                        "experience_id": 1,
+                        "experience_id": "1",
                         "is_relevant": True
                     },
                     {
-                        "experience_id": 2,
+                        "experience_id": "2",
                         "is_relevant": False
                     }
                 ],
