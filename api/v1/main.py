@@ -39,7 +39,7 @@ async def health_check() -> Dict[str, Any]:
         "version": app.version
     }
 
-@app.post("/resumes/parse")
+@app.post("/resumes/parse/")
 async def parse_resume(
     candidate_id: int,
     blend: bool = False,
