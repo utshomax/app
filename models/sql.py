@@ -42,42 +42,43 @@ class CandidateResume(PGBase):
     jobby_telephone = Column(String(45))
     jobby_email = Column(String(255))
     jobby_date_of_birth = Column(Date)
-    jobby_location = Column(String(255))  # GPS or preferred cities
+    jobby_location = Column(String(255),default="")  # GPS or preferred cities
     jobby_availability = Column(String(255))  # e.g., "Monday Morning, Tuesday Evening"
-    jobby_about = Column(Text)  # Professional about/objective
-    jobby_skills = Column(JSON)  # List of skills
-    jobby_language = Column(String(45))  # List of languages
-    jobby_certifications = Column(JSON)  # List of certifications
-    jobby_education = Column(JSON)  # List of education records with institution, degree, dates, etc.
-    jobby_jobs = Column(JSON)  # List of jobs with company, title, dates, etc.
+    jobby_about = Column(Text,default="")  # Professional about/objective
+    jobby_skills = Column(JSON,default=[] )  # List of skills
+    jobby_language = Column(String(45),default=[])  # List of languages
+    jobby_certifications = Column(JSON,default=[])  # List of certifications
+    jobby_education = Column(JSON,default=[])  # List of education records with institution, degree, dates, etc.
+    jobby_jobs = Column(JSON,default={})  # List of jobs with company, title, dates, etc.
     jobby_rating = Column(Float(4, 2))
     jobby_premium = Column(Boolean, default=False)
-    jobby_reviews = Column(JSON)
+    jobby_reviews = Column(JSON,default=[])
 
     # data from resume
     name = Column(String(255))
-    gender = Column(String(10), nullable=True)  # Male, Female, Others
+    gender = Column(String(10), default="Others")  # Male, Female, Others
     phone = Column(String(45))
     email = Column(String(255))
-    location = Column(String(255))  # GPS or preferred cities
+    location = Column(String(255),default="")  # GPS or preferred cities
     # availability = Column(String(255))  # e.g., "Monday Morning, Tuesday Evening"
-    about = Column(Text)  # Professional about/objective
+    about = Column(Text,default="")  # Professional about/objective
 
     # Skills and Languages
-    skills = Column(JSON)  # List of skills
-    languages = Column(JSON)  # List of languages
-    certifications = Column(JSON)  # List of certifications
+    skills = Column(JSON,default=[])  # List of skills
+    languages = Column(JSON,default=[])  # List of languages
+    certifications = Column(JSON,default=[])  # List of certifications
 
     # Education and Experience
-    education = Column(JSON)  # List of education records with institution, degree, dates, etc.
-    experience = Column(JSON)  # List of work experiences with company, title, dates, etc.
-    projects = Column(JSON)  # Projects worked on
+    education = Column(JSON,default=[])  # List of education records with institution, degree, dates, etc.
+    experience = Column(JSON,default=[])  # List of work experiences with company, title, dates, etc.
+    projects = Column(JSON,default=[])  # Projects worked on
 
     # Additional Professional Information
-    achievements = Column(JSON)  # List of professional achievements
-    publications = Column(JSON)  # List of publications if any
-    volunteer_work = Column(JSON)  # Volunteer experience
-    professional_links = Column(JSON)  # LinkedIn, portfolio, etc.
+    achievements = Column(JSON, default=[])  # List of professional achievements
+    publications = Column(JSON, default=[])  # List of publications if any
+    volunteer_work = Column(JSON, default=[])  # Volunteer experience
+    professional_links = Column(JSON, default=[])  # LinkedIn, portfolio, etc.
+    tags = Column(JSON,default=[])
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

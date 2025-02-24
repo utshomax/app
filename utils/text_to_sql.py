@@ -28,11 +28,6 @@ class TextToSQLConverter:
             jobby_date_of_birth DATE,
             jobby_location VARCHAR(255),
             jobby_availability VARCHAR(255),
-            jobby_about TEXT,
-            jobby_skills JSONB (ARRAY of strings),
-            jobby_language VARCHAR(45),
-            jobby_certifications JSONB (ARRAY of strings),
-            jobby_education JSONB (ARRAY),
             jobby_jobs JSONB (Object of {total: int
                     categories: array of JobCategory the user has worked on({
                         count: int
@@ -52,6 +47,8 @@ class TextToSQLConverter:
             email VARCHAR(255),
             location VARCHAR(255),
             about TEXT,
+            --- Associated search tags
+            tags:  JSONB ( Array of Strings )
 
             -- Skills and Languages
             skills JSONB (ARRAY of strings),
@@ -91,7 +88,17 @@ class TextToSQLConverter:
         schema = self.get_table_schema(table_names)
 
         messages = [
-            {"role": "system", "content": "You are a PostGres SQL Fuzzy Search expert for finding suitable candidates for diffrent possitions. Analize the search text and Try to find users intent. Determine possible places to search for the information. Generate a postgres compatible SQL query based on the provided schema.You MUST ONLY return the SQL query or False without any explanation. RETURN False if you are unable to generate the query or the query is invalid. FOR A VALID QUERY RETURN only the user_id. Add a limit of 50. Do not include any other information in the response."},
+            {"role": "system", "content": """You are a PostGres SQL Fuzzy Search expert for finding suitable candidates for diffrent possitions.
+             Analize the search text and Try to find users intent.
+             Determine possible places to search for the information.
+             Tags columns contains relevent tags for a candidate.
+             Generate a postgres compatible SQL query based on the provided schema.
+             You MUST ONLY return the SQL query or False without any explanation.
+             RETURN False if you are unable to generate the query or the query is invalid.
+             Try to do proximity search on skills, certifications, experience, education, language using ilike oparator.
+             FOR A VALID QUERY RETURN only the user_id. Add a limit of 50.
+             DO NOT include any other information in the response.
+             """},
             {"role": "user", "content": f"### Postgres SQL table with properties:\n{schema}\n ### Additional Information: \n{additional_context}\n ### {query}\n### SQL Query:"}
         ]
 
@@ -108,10 +115,10 @@ class TextToSQLConverter:
         if sql_query.startswith('```sql'):
             # Remove SQL code block markers
             sql_query = sql_query.replace('```sql', '').replace('```', '')
-        
+
         # Clean up any remaining newlines and extra spaces
         sql_query = ' '.join(sql_query.split())
-        
+
         return sql_query.strip()
 
     def execute_query(self, query: str, table_names: Optional[List[str]] = None) -> Dict[str, Any]:
@@ -120,7 +127,6 @@ class TextToSQLConverter:
             if not os.getenv('OPENAI_API_KEY'):
                 raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable.")
             additional_context = """
-            experience, education, certification, skills should be queried in both jobby_* and normal columns.
             Try to do proximity search on skills, certifications, experience, education, language using ilike oparator.
             Use ILIKE operator for fuzzy search.
             You may decide to search in descriptions feilds or about coloumn as well.
@@ -134,11 +140,6 @@ class TextToSQLConverter:
                         SELECT 1
                         FROM jsonb_array_elements_text(skills::JSONB) AS skill
                         WHERE skill ILIKE '%cook%'
-                    )
-                    OR EXISTS (
-                        SELECT 1
-                        FROM jsonb_array_elements_text(jobby_skills::JSONB) AS job_skill
-                        WHERE job_skill ILIKE '%cook%'
                     )
                     LIMIT 50;
                 Question: Candidates worked in RANDSTAD

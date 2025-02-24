@@ -58,6 +58,7 @@ class ResumeData(BaseModel):
     education: List[Education] = Field(default_factory=list, description="Educational background")
     languages: List[str] = Field(default_factory=list, description="Languages known with proficiency")
     certifications: List[str] = Field(default_factory=list, description="certifications and licenses")
+    tags: List[str] = Field(default_factory=List, description="10 tags to describe the candidate which will be used search the candidate")
 
     class Config:
         json_schema_extra = {
@@ -93,6 +94,18 @@ class ResumeData(BaseModel):
                     }
                 ],
                 "languages": ["English (Native)", "Spanish (Intermediate)"],
-                "certifications": ["AWS Certified Solutions Architect", "Google Cloud Professional Engineer"]
+                "certifications": ["AWS Certified Solutions Architect", "Google Cloud Professional Engineer"],
+                "tags" : [
+                    "python",
+                    "senior_engineer",
+                    "cloud_expert",
+                    "full_stack_developer",
+                    "machine_learning",
+                    "microservices",
+                    "aws_certified",
+                    "team_lead",
+                    "stanford_alumni",
+                    "multilingual"
+                ]
             }
         }

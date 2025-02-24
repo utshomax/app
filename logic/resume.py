@@ -76,7 +76,10 @@ async def store_resume_data(pg_db: Session, candidate_id, candidate_data, resume
             'jobby_premium': candidate_data.get('basic_info', {}).get('premium'),
             'jobby_jobs': candidate_data.get('jobs'),
             'jobby_language': candidate_data.get('basic_info', {}).get('language'),
-            'jobby_certifications': candidate_data.get('certifications'),
+            'jobby_certifications': candidate_data.get('certifications') or [],
+            'jobby_education': candidate_data.get('education') or [],
+            'jobby_skills' : candidate_data.get('jobby_skills') or [],
+            'tags' : candidate_data.get('tags') or [],
             'resume_path': resume_path,
             'user_id': candidate_id,
             **result.get('data', {})
@@ -100,7 +103,6 @@ async def store_resume_data(pg_db: Session, candidate_id, candidate_data, resume
 
     except Exception as e:
         logging.error(f"Error storing resume data: {str(e)}")
-        raise e
         return {"error": f"Failed to store resume data: {str(e)}"}
 
 def make_candidate_profile_response(existing_resume) -> Dict[str, Any]:
@@ -114,7 +116,8 @@ def make_candidate_profile_response(existing_resume) -> Dict[str, Any]:
               "skills", "languages", "certifications", "education",
               "experience", "projects", "achievements", "publications",
               "volunteer_work", "professional_links","jobby_gender", "jobby_telephone", "jobby_email", "jobby_about",
-              "jobby_rating", "jobby_premium", "jobby_jobs", "jobby_certifications"
+              "jobby_rating", "jobby_premium", "jobby_jobs", "jobby_certifications", "jobby_language", "jobby_date_of_birth", "jobby_skills",
+              "tags"
           ]},
           "blended": existing_resume.has_jobby_data,
       }
