@@ -93,10 +93,35 @@ class TextToSQLConverter:
              Determine possible places to search for the information.
              Tags columns contains relevent tags for a candidate.
              Generate a postgres compatible SQL query based on the provided schema.
-             You MUST ONLY return the SQL query or False without any explanation.
+            Guidelines for Searching Inside a JSONB Object in PostgreSQL
+            1. Understanding JSONB Structure
+            Check if the data is a simple key-value pair, an array of values, or an array of objects.
+            Inspect the structure before querying to avoid incorrect assumptions.
+            2. Choosing the Right Operator Based on Use Case
+            Use Case	Operator	When to Use
+            Check if a key exists	?	When you only need to know if a key is present in the JSONB object.
+            Check if multiple keys exist	?&	When checking if all given keys exist in the JSONB object.
+            Check if at least one key exists	`?	`
+            Extract a value by key	->	When retrieving a JSONB object or array (not text).
+            Extract a value as text	->>	When retrieving a value as text for filtering or comparison.
+            Search inside a JSONB array of values	jsonb_array_elements_text()	When dealing with arrays of plain text values.
+            Search inside a JSONB array of objects	jsonb_array_elements()	When dealing with arrays containing JSON objects.
+            Check if JSONB contains a value	@>	When checking if a JSONB object/array contains another JSON structure.
+            Search for partial matches	ILIKE	When performing case-insensitive text searches within JSONB values.
+            3. Searching Inside JSONB Arrays
+            Use jsonb_array_elements_text() when searching inside an array of text values.
+            Use jsonb_array_elements() when searching inside an array of JSON objects.
+            Always extract specific fields before applying conditions.
+            4. Searching Inside JSONB Objects
+            Use -> when extracting JSONB sub-objects.
+            Use ->> when extracting values as text for filtering.
+            Use @> for checking if a JSONB object contains a specific key-value pair.
+
+            You MUST ONLY return the SQL query or False without any explanation.
              RETURN False if you are unable to generate the query or the query is invalid.
              Try to do proximity search on skills, certifications, experience, education, language using ilike oparator.
              FOR A VALID QUERY RETURN only the user_id. Add a limit of 50.
+             ALLWAYS use COALESCE when extracting values from JSONB fields.
              DO NOT include any other information in the response.
              """},
             {"role": "user", "content": f"### Postgres SQL table with properties:\n{schema}\n ### Additional Information: \n{additional_context}\n ### {query}\n### SQL Query:"}
