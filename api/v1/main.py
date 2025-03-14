@@ -1,8 +1,9 @@
 import asyncio
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Body
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any, Generator
+from typing import List, Dict, Any, Generator, Optional
+from pydantic import BaseModel
 
 from core.database import get_db, get_pg_db
 from logic.collect import collect_candidate_data
@@ -16,7 +17,17 @@ from utils.structure import DataStructureService
 
 app = FastAPI(
     title="Jobby API",
-    description="API for resume parsing and candidate evaluation",
+    description="""API for resume parsing and candidate evaluation.
+    
+    The search endpoint (/candidates/search) accepts a POST request with a JSON body containing:
+    - query: Required search query string
+    - location: Optional list of locations to filter by
+    - experience_level: Optional list of experience levels (e.g., "1-3 years")
+    - soft_skills: Optional list of soft skills to filter by
+    - hard_skills: Optional list of hard skills to filter by
+    - languages: Optional list of languages to filter by
+    - certifications: Optional list of certifications to filter by
+    """,
     version="1.0.0"
 )
 
@@ -29,6 +40,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class SearchRequest(BaseModel):
+    query: str
+    location: Optional[List[str]] = None
+    experience_level: Optional[List[str]] = None
+    soft_skills: Optional[List[str]] = None
+    hard_skills: Optional[List[str]] = None
+    languages: Optional[List[str]] = None
+    certifications: Optional[List[str]] = None
 
 @app.get("/health")
 async def health_check() -> Dict[str, Any]:
@@ -83,13 +102,47 @@ async def parse_resume(
         logging.error(f"Error processing resume for candidate {candidate_id}: {str(e)}")
         return {"success": False, "error": f"Failed to process resume: {str(e)}"}
 
-@app.get("/candidates/search")
+@app.post("/candidates/search")
 async def search_candidates(
-    query: str,
+    request: SearchRequest,
     pg_db: Session = Depends(get_pg_db),
 ) -> Dict[str, Any]:
-    """Search and evaluate candidates based on criteria"""
-    return await CandidateEvaluator(pg_db).search_candidates(query)
+    """
+    Search and evaluate candidates based on criteria with optional filters.
+    
+    Request body:
+    - **query**: Natural language search query (e.g., "Find Java developers")
+    - **location**: List of locations to filter by (e.g., ["New York", "San Francisco"])
+    - **experience_level**: List of experience levels (e.g., ["1-3 years", "3-5 years"])
+    - **soft_skills**: List of soft skills to filter by (e.g., ["communication", "teamwork"])
+    - **hard_skills**: List of hard skills to filter by (e.g., ["Java", "Python"])
+    - **languages**: List of languages to filter by (e.g., ["English", "Spanish"])
+    - **certifications**: List of certifications to filter by (e.g., ["AWS", "PMP"])
+    
+    The search combines both semantic search (via the query parameter) and direct database filtering.
+    Results will include candidates that match both the semantic search and the applied filters.
+    
+    Example request:
+    ```json
+    {
+        "query": "Find experienced software developers",
+        "location": ["Milan", "Rome"],
+        "experience_level": ["3-5 years", "5+ years"],
+        "hard_skills": ["Python", "JavaScript"],
+        "languages": ["English", "Italian"],
+        "certifications": ["AWS"]
+    }
+    ```
+    """
+    return await CandidateEvaluator(pg_db).search_candidates(
+        request.query, 
+        location=request.location,
+        experience_level=request.experience_level,
+        soft_skills=request.soft_skills,
+        hard_skills=request.hard_skills,
+        languages=request.languages,
+        certifications=request.certifications
+    )
 
 @app.post("/candidates/evaluate")
 async def evaluate_candidate(

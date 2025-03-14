@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from utils.structure import DataStructureService
 from utils.text_to_sql import TextToSQLConverter
@@ -30,33 +30,169 @@ class CandidateEvaluator:
         columns = all_candidates.keys()
         candidates_data = [dict(zip(columns, row)) for row in rows]
         return candidates_data
-    async def search_candidates(self, search_query: str) -> Dict[str, Any]:
-        """Search and evaluate candidates based on the search query with optimized performance"""
+    async def search_candidates(self, search_query: str, 
+                               location: Optional[List[str]] = None,
+                               experience_level: Optional[List[str]] = None,
+                               soft_skills: Optional[List[str]] = None,
+                               hard_skills: Optional[List[str]] = None,
+                               languages: Optional[List[str]] = None,
+                               certifications: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Search and evaluate candidates based on the search query with optimized performance and filters"""
         try:
             # Convert natural language query to SQL
             sql_result = self.text_to_sql.execute_query(search_query, self.table_names)
-            if 'error' in sql_result:
-                return sql_result
 
-            # Get candidates from database
-            results = sql_result['results']
-            if not results:
+            llm_results = []
+            if 'error' not in sql_result:
+                llm_results = sql_result['results']
+            # Get candidates from database using LLM-generated query
+            if not llm_results:
+                llm_candidate_ids = []
+            else:
+                llm_candidate_ids = [candidate['user_id'] for candidate in llm_results]
+            
+            # Apply direct database filters
+            filtered_candidate_ids = self.apply_filters(
+                location=location,
+                experience_level=experience_level,
+                soft_skills=soft_skills,
+                hard_skills=hard_skills,
+                languages=languages,
+                certifications=certifications
+            )
+            
+            # Merge results from LLM query and direct filters
+            if llm_candidate_ids and filtered_candidate_ids:
+                # Intersection of both result sets if both have results
+                final_candidate_ids = list(set(llm_candidate_ids).intersection(set(filtered_candidate_ids)))
+            elif filtered_candidate_ids:
+                # Use only filter results if LLM returned nothing
+                final_candidate_ids = filtered_candidate_ids
+            else:
+                # Use only LLM results if no filters applied or filters returned nothing
+                final_candidate_ids = llm_candidate_ids
+            
+            if not final_candidate_ids:
                 return {
-                    'sql': sql_result['sql'],
+                    'sql': sql_result.get('sql', ''),
                     'candidates': [],
                 }
-            candidate_ids = [str(candidate['user_id']) for candidate in results]
-            candidates = self.get_candidates(candidate_ids)
-            # Optimize database query with batch processing
-
+            
+            # Get full candidate data
+            candidates = self.get_candidates(final_candidate_ids)
+            
             return {
-                 'sql': sql_result['sql'],
-                 'candidates': candidates,
+                'sql': sql_result.get('sql', ''),
+                'candidates': candidates,
             }
-
+            
         except Exception as e:
             logging.error(f"Error in search_candidates: {str(e)}")
             return {'error': str(e)}
+    
+    def apply_filters(self, 
+                     location: Optional[List[str]] = None,
+                     experience_level: Optional[List[str]] = None,
+                     soft_skills: Optional[List[str]] = None,
+                     hard_skills: Optional[List[str]] = None,
+                     languages: Optional[List[str]] = None,
+                     certifications: Optional[List[str]] = None) -> List[int]:
+        """Apply direct database filters to candidate data"""
+        if not any([location, experience_level, soft_skills, hard_skills, languages, certifications]):
+            return []  # No filters applied
+        
+        query = "SELECT user_id FROM candidate_resumes WHERE 1=1"
+        params = {}
+        
+        # Location filter
+        if location and len(location) > 0:
+            location_conditions = []
+            for i, loc in enumerate(location):
+                param_name = f"location_{i}"
+                location_conditions.append(f"location ILIKE :{param_name}")
+                params[param_name] = f"%{loc}%"
+            
+            if location_conditions:
+                query += f" AND ({' OR '.join(location_conditions)})"
+        
+        # Experience level filter (assuming it's stored in the experience JSON field)
+        if experience_level and len(experience_level) > 0:
+            query += """ AND EXISTS (
+                SELECT 1 FROM jsonb_array_elements(experience::jsonb) AS exp
+                WHERE """
+            
+            exp_conditions = []
+            for i, level in enumerate(experience_level):
+                param_name = f"exp_level_{i}"
+                exp_conditions.append(f"exp->>'duration' ILIKE :{param_name}")
+                params[param_name] = f"%{level}%"
+            
+            query += f"{' OR '.join(exp_conditions)})"
+        
+        # Skills filters (assuming skills are stored in the skills JSON field)
+        if soft_skills and len(soft_skills) > 0:
+            soft_skill_conditions = []
+            for i, skill in enumerate(soft_skills):
+                param_name = f"soft_skill_{i}"
+                soft_skill_conditions.append(f"skill ILIKE :{param_name}")
+                params[param_name] = f"%{skill}%"
+            
+            if soft_skill_conditions:
+                query += f""" AND EXISTS (
+                    SELECT 1 FROM jsonb_array_elements_text(skills::jsonb) AS skill
+                    WHERE {' OR '.join(soft_skill_conditions)}
+                )"""
+        
+        if hard_skills and len(hard_skills) > 0:
+            hard_skill_conditions = []
+            for i, skill in enumerate(hard_skills):
+                param_name = f"hard_skill_{i}"
+                hard_skill_conditions.append(f"skill ILIKE :{param_name}")
+                params[param_name] = f"%{skill}%"
+            
+            if hard_skill_conditions:
+                query += f""" AND EXISTS (
+                    SELECT 1 FROM jsonb_array_elements_text(skills::jsonb) AS skill
+                    WHERE {' OR '.join(hard_skill_conditions)}
+                )"""
+        
+        # Languages filter
+        if languages and len(languages) > 0:
+            lang_conditions = []
+            for i, lang in enumerate(languages):
+                param_name = f"language_{i}"
+                lang_conditions.append(f"lang_item->>'language' ILIKE :{param_name}")
+                params[param_name] = f"%{lang}%"
+            
+            if lang_conditions:
+                query += f""" AND EXISTS (
+                    SELECT 1 FROM jsonb_array_elements(languages::jsonb) AS lang_item
+                    WHERE {' OR '.join(lang_conditions)}
+                )"""
+        
+        # Certifications filter
+        if certifications and len(certifications) > 0:
+            cert_conditions = []
+            for i, cert in enumerate(certifications):
+                param_name = f"cert_{i}"
+                cert_conditions.append(f"cert_item->>'name' ILIKE :{param_name}")
+                params[param_name] = f"%{cert}%"
+            
+            if cert_conditions:
+                query += f""" AND EXISTS (
+                    SELECT 1 FROM jsonb_array_elements(certifications::jsonb) AS cert_item
+                    WHERE {' OR '.join(cert_conditions)}
+                )"""
+        
+        try:
+            logging.info(f"Filter query: {query}")
+            logging.info(f"Filter params: {params}")
+            result = self.db.execute(text(query), params)
+            rows = result.fetchall()
+            return [row[0] for row in rows]  # Extract user_ids
+        except Exception as e:
+            logging.error(f"Error applying filters: {str(e)}")
+            return []
 
     async def evaluate_candidate_list(self, candidate_ids:List, compare_with:str):
           import asyncio
